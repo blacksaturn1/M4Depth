@@ -1,0 +1,5 @@
+data
+datasets
+logs/output
+__pycache__
+pretrained_weights
