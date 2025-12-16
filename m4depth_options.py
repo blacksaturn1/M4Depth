@@ -27,7 +27,7 @@ class M4DepthOptions:
                           default=os.path.join(os.path.dirname(__file__),"datasets_location.json"),
                           help="""Json file with datasets path configuration""")
         args.add_argument('--batch_size',
-                          default=3, type=int,
+                          default=2, type=int,
                           help="""Size of each minibatch for each GPU""")
         args.add_argument('--records_path',
                           default=None, type=str,

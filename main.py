@@ -104,7 +104,7 @@ if __name__ == '__main__':
         else:
             nbre_epochs = (220000 // chosen_dataloader.length)
         print("Training for %d epochs" % nbre_epochs)
-        # nbre_epochs = 200 # For testing purposes, limit to 2 epochs
+        nbre_epochs = 6 # For testing purposes, limit to 2 epochs
         print("Updated training for %d epochs" % nbre_epochs)
         
         model.fit(data, epochs= nbre_epochs + 1,

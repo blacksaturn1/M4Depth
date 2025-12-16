@@ -27,6 +27,11 @@ bash  scripts/0a-get_midair.sh /home/mind/dev/rbe/M4Depth/datasets/midair /home/
 bash  scripts/0a-get_midair.sh /home/mind/dev/rbe/M4Depth/datasets/midair /home/mind/dev/rbe/M4Depth/datasets/midair/config/download_config_2.txt
 ```
 
+```shell
+bash  scripts/0a-get_midair.sh /media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/datasets/midair /media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/datasets/midair/config/download_config_3.txt
+```
+
+
 ## Extract MidAir Dataset
 ```shell
 bash  scripts/0a-get_midair-expand.sh /media/mind/MeBackup/datasets/midair /media/mind/MeBackup/datasets/midair/config/download_config_all.txt
