@@ -47,7 +47,8 @@ class DataLoaderGeneric():
         '''
         return NotImplementedError
 
-    def get_dataset(self, usecase, settings, batch_size=3, out_size=None, max_items=None): # usecase, db_seq_len=None, seq_len=None, batch_size=3):
+    def get_dataset(self, usecase, settings, batch_size=3, out_size=None, 
+                    max_items=None, indices=None): # usecase, db_seq_len=None, seq_len=None, batch_size=3):
         ''' Builds a tensorflow dataset using provided parameters
             * usecase : the mode in which the dataset will be used (train, eval, predict,...)
             * db_seq_len: [int] if provided, the input data will be cut in subtrajectories of the given length
@@ -79,8 +80,17 @@ class DataLoaderGeneric():
         self.dataset = function()
         if max_items is not None:
             self.dataset = self.dataset.take(max_items)
-        self.length = self.dataset.cardinality().numpy()
+        if indices is not None:
+            # indices: list/np.array of sample indices you want
+            indices_tf = tf.constant(indices, dtype=tf.int64)
+            ds_enum = self.dataset.enumerate()  # (i, sample)
 
+            def keep_index(i, _):
+                return tf.reduce_any(tf.equal(i, indices_tf))
+
+            self.dataset = ds_enum.filter(keep_index).map(lambda _, s: s)
+
+        self.length = self.dataset.cardinality().numpy()
         return self.dataset
 
     def _get_trajectories(self):

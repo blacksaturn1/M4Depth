@@ -104,7 +104,7 @@ if __name__ == '__main__':
         else:
             nbre_epochs = (220000 // chosen_dataloader.length)
         print("Training for %d epochs" % nbre_epochs)
-        nbre_epochs = 6 # For testing purposes, limit to 2 epochs
+        # nbre_epochs = 6 # For testing purposes, limit to 2 epochs
         print("Updated training for %d epochs" % nbre_epochs)
         
         model.fit(data, epochs= nbre_epochs + 1,
@@ -151,12 +151,16 @@ if __name__ == '__main__':
                        newline='\n')
 
     elif cmd.mode == "predict":
-        chosen_dataloader.get_dataset("predict", model_opts.dataloader_settings, batch_size=1)
+        # chosen_dataloader.get_dataset("predict", model_opts.dataloader_settings, batch_size=1)
+        indices = [1,2, 10, 19, 42, 150, 250, 500, 1000, 1500, 3000]  # examples
+        chosen_dataloader.get_dataset("predict", model_opts.dataloader_settings,
+                              batch_size=1, indices=indices)
         data = chosen_dataloader.dataset
 
         model = M4Depth(nbre_levels=nbre_levels, ablation_settings=model_opts.ablation_settings)
         model.compile()
-        model_checkpoint_cbk = CustomCheckpointCallback(os.path.join(ckpt_dir, "best"), resume_training=True)
+        # model_checkpoint_cbk = CustomCheckpointCallback(os.path.join(ckpt_dir, "best"), resume_training=True)
+        model_checkpoint_cbk = CustomCheckpointCallback(ckpt_dir, resume_training=True)
         first_sample = data.take(1)
         model.predict(first_sample, callbacks=[model_checkpoint_cbk])
 
@@ -172,10 +176,11 @@ if __name__ == '__main__':
                 print("Skipping sample %d as it starts a new trajectory." % i)
                 continue  # Skip to next sample if new trajectory starts
             if is_first_run:
+                is_first_run = False
                 continue
-            if i>10:
-                break  # For testing purposes, limit to first 10 samples
-            is_first_run = False
+            # if i>10:
+            #     break  # For testing purposes, limit to first 10 samples
+            
 
             est = model([[sample], sample["camera"]]) # Run network to get estimates
             d_est = est["depth"][0, :, :, :]        # Estimate : [h,w,1] matrix with depth in meter
@@ -202,4 +207,65 @@ if __name__ == '__main__':
 
             _save_depth(d_est, f"depth_est_{i:06d}.png")
             _save_depth(d_gt, f"depth_gt_{i:06d}.png")
+
+        # Combine saved images into grids for visualization.
+        # Each column corresponds to a sample; for every sample we stack:
+        # RGB, estimated depth, ground-truth depth (3 rows per sample),
+        # arranged in 10 columns.
+
+        from PIL import Image
+        import math
+
+        # Collect indices for which RGB images were saved (matches filename indices)
+        saved_indices = [idx for idx in range(0, i + 1)
+                         if os.path.exists(os.path.join(save_dir, f"rgb_{idx:06d}.png"))]
+
+        if saved_indices:
+            # Use the first saved RGB image to get thumbnail size
+            first_rgb_path = os.path.join(save_dir, f"rgb_{saved_indices[0]:06d}.png")
+            with Image.open(first_rgb_path) as im0:
+                thumb_width, thumb_height = im0.size
+
+            num_images = len(saved_indices)
+            grid_cols = 10
+            group_rows = math.ceil(num_images / grid_cols)
+            grid_rows = group_rows * 3  # RGB, depth_est, depth_gt per sample
+
+            grid_image = Image.new('RGB', (grid_cols * thumb_width,
+                                           grid_rows * thumb_height))
+
+            for pos, idx in enumerate(saved_indices):
+                col = pos % grid_cols
+                group = pos // grid_cols
+
+                # RGB row
+                rgb_path = os.path.join(save_dir, f"rgb_{idx:06d}.png")
+                with Image.open(rgb_path) as img_rgb:
+                    img_rgb = img_rgb.convert('RGB')
+                    grid_image.paste(img_rgb,
+                                     (col * thumb_width,
+                                      (group * 3 + 0) * thumb_height))
+
+                # Estimated depth row
+                d_est_path = os.path.join(save_dir, f"depth_est_{idx:06d}.png")
+                if os.path.exists(d_est_path):
+                    with Image.open(d_est_path) as img_de:
+                        img_de = img_de.convert('L')
+                        grid_image.paste(img_de.convert('RGB'),
+                                         (col * thumb_width,
+                                          (group * 3 + 1) * thumb_height))
+
+                # Ground-truth depth row
+                d_gt_path = os.path.join(save_dir, f"depth_gt_{idx:06d}.png")
+                if os.path.exists(d_gt_path):
+                    with Image.open(d_gt_path) as img_dg:
+                        img_dg = img_dg.convert('L')
+                        grid_image.paste(img_dg.convert('RGB'),
+                                         (col * thumb_width,
+                                          (group * 3 + 2) * thumb_height))
+
+            grid_image_path = os.path.join(save_dir, "rgb_depth_grid.png")
+            grid_image.save(grid_image_path)
+            print(f"Saved RGB+depth image grid to {grid_image_path}")
+
 

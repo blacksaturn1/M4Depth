@@ -12,9 +12,10 @@ case "$dataset" in
     "midair")
         if [ -z "$2" ]
         then
-            savepath="pretrained_weights/midair"
+            # savepath="pretrained_weights/midair"
+            savepath="/media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/weights/midair/train"
         fi
-        db_seq_len=""
+        db_seq_len="--db_seq_len=4"
         data="data/midair/test_data"
         ;;
 

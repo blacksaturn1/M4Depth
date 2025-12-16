@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Predict Mode with Epochs",
+            "name": "Predict Mode with Pretrained",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
@@ -17,6 +17,25 @@
                 "--records_path", "data/midair/test_data",
                 "--save_dir", "results/midair/predict",
                 "--ckpt_dir", "pretrained_weights/midair",
+                "--arch_depth", "6"
+
+            ],
+
+            //"args": "${command:pickArgs}"
+        },
+         {
+            "name": "Predict Mode with Custom Checkpoint",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--mode", "predict",
+                "--epochs", "10",
+                "--dataset", "midair",
+                "--records_path", "data/midair/test_data",
+                "--save_dir", "results/midair/predict/custom",
+                "--ckpt_dir", "weights/midair/train",
                 "--arch_depth", "6"
 
             ],

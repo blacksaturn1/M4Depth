@@ -42,7 +42,15 @@ bash  scripts/0a-get_midair-expand.sh /media/mind/MeBackup/datasets/midair /medi
 ```shell
 bash  scripts/2-evaluate.sh midair /media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/pretrained_weights/midair
 ```
+
 ## Use debugger to use 'predict' dataset
+```shell
+bash  scripts/3-predict.sh midair /media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/pretrained_weights/midair
+```
+```shell
+bash  scripts/3-predict.sh midair /media/mind/MeBackup/wpi/RBE-MachineLearning/M4Depth/weights/midair/train
+```
+
 
 ## Train
 ```shell

@@ -22,11 +22,12 @@ class DataLoaderMidAir(DataLoaderGeneric):
         self.cx = 0.5 * self.intermediate_size[1]
         self.cy = 0.5 * self.intermediate_size[0]
 
-    def get_dataset(self, usecase, settings, batch_size=3, out_size=[384, 384], crop=False):
+    def get_dataset(self, usecase, settings, batch_size=3, out_size=[384, 384], crop=False,indices=None):
         self.crop = crop
         if (usecase == "eval" or usecase=="predict") and self.crop:
             return AttributeError("Crop option should be disabled when evaluating or predicting samples")
-        super(DataLoaderMidAir, self).get_dataset(usecase, settings, batch_size=batch_size, out_size=out_size)
+        super(DataLoaderMidAir, self).get_dataset(usecase, settings, batch_size=batch_size, 
+                                                  out_size=out_size,indices=indices)
 
     @tf.function
     def _decode_samples(self, data_sample):
