@@ -25,6 +25,6 @@ fi
 
 cd "$DB_DIR"
 
-wget --content-disposition -x -nH --cut-dirs=1 -i  "$DOWNLOAD_FILE" --no-check-certificate
+# get --content-disposition -x -nH --cut-dirs=1 -i  "$DOWNLOAD_FILE" --no-check-certificate
 
-#find . -name "*.zip" | while read filename; do unzip -o -d $(dirname "$filename") "$filename"; rm "$filename"; done;
+find . -name "*.zip" | while read filename; do unzip -o -d $(dirname "$filename") "$filename"; rm "$filename"; done;
