@@ -103,7 +103,10 @@ if __name__ == '__main__':
             nbre_epochs = model_checkpoint_cbk.resume_epoch + (20000 // chosen_dataloader.length)
         else:
             nbre_epochs = (220000 // chosen_dataloader.length)
-
+        print("Training for %d epochs" % nbre_epochs)
+        # nbre_epochs = 200 # For testing purposes, limit to 2 epochs
+        print("Updated training for %d epochs" % nbre_epochs)
+        
         model.fit(data, epochs= nbre_epochs + 1,
                   initial_epoch=model_checkpoint_cbk.resume_epoch,
                   callbacks=[tensorboard_cbk, model_checkpoint_cbk] + val_cbk)
@@ -159,16 +162,44 @@ if __name__ == '__main__':
 
         is_first_run = True
 
+        # Set up directory to save RGB input images
+        save_dir = cmd.save_dir if hasattr(cmd, 'save_dir') and cmd.save_dir is not None else os.path.join(ckpt_dir, "predictions")
+        os.makedirs(save_dir, exist_ok=True)
+
         # Do what you want with the outputs
         for i, sample in enumerate(data):
             if not is_first_run and sample["new_traj"]:
-                print("End of trajectory")
-
+                print("Skipping sample %d as it starts a new trajectory." % i)
+                continue  # Skip to next sample if new trajectory starts
+            if is_first_run:
+                continue
+            if i>10:
+                break  # For testing purposes, limit to first 10 samples
             is_first_run = False
 
             est = model([[sample], sample["camera"]]) # Run network to get estimates
             d_est = est["depth"][0, :, :, :]        # Estimate : [h,w,1] matrix with depth in meter
             d_gt = sample['depth'][0, :, :, :]      # Ground truth : [h,w,1] matrix with depth in meter
             i_rgb = sample['RGB_im'][0, :, :, :]    # RGB image : [h,w,3] matrix with rgb channels ranging between 0 and 1
+            print("Prediction %d done" % i)
 
+            # Save RGB input image to disk as PNG
+            rgb_uint8 = tf.image.convert_image_dtype(i_rgb, dtype=tf.uint8, saturate=True)
+            img_bytes = tf.io.encode_png(rgb_uint8)
+            img_path = os.path.join(save_dir, f"rgb_{i:06d}.png")
+            tf.io.write_file(img_path, img_bytes)
+
+            # Save estimated and ground-truth depth as 16-bit PNGs
+            max_depth = 80.0  # meters; used for visualization scaling
+
+            def _save_depth(depth_tensor, filename):
+                depth_clipped = tf.clip_by_value(depth_tensor, 0.0, max_depth)
+                depth_norm = depth_clipped / max_depth
+                depth_uint16 = tf.image.convert_image_dtype(depth_norm, dtype=tf.uint16, saturate=True)
+                depth_bytes = tf.io.encode_png(depth_uint16)
+                depth_path = os.path.join(save_dir, filename)
+                tf.io.write_file(depth_path, depth_bytes)
+
+            _save_depth(d_est, f"depth_est_{i:06d}.png")
+            _save_depth(d_gt, f"depth_gt_{i:06d}.png")
 

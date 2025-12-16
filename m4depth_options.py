@@ -41,7 +41,7 @@ class M4DepthOptions:
 
         # Train Options
         args.add_argument('--log_dir',
-                          default=None,
+                          default="output/logs",
                           help="""Tensorboard log directory""")
         args.add_argument('--summary_interval',
                           default=1200, type=int,
@@ -59,6 +59,11 @@ class M4DepthOptions:
         args.add_argument('--keep_top_n',
                           default=1, type=int,
                           help="""Amount of top performing checkpoints to keep.""")
+
+        # Prediction / output options
+        args.add_argument('--save_dir',
+                  default=None,
+                  help="""Directory where prediction outputs (e.g. RGB images) are saved""")
 
         # Ablation Options
         args.add_argument('--arch_depth',

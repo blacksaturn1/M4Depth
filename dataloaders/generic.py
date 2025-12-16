@@ -47,7 +47,7 @@ class DataLoaderGeneric():
         '''
         return NotImplementedError
 
-    def get_dataset(self, usecase, settings, batch_size=3, out_size=None): # usecase, db_seq_len=None, seq_len=None, batch_size=3):
+    def get_dataset(self, usecase, settings, batch_size=3, out_size=None, max_items=None): # usecase, db_seq_len=None, seq_len=None, batch_size=3):
         ''' Builds a tensorflow dataset using provided parameters
             * usecase : the mode in which the dataset will be used (train, eval, predict,...)
             * db_seq_len: [int] if provided, the input data will be cut in subtrajectories of the given length
@@ -77,6 +77,8 @@ class DataLoaderGeneric():
         except:
             raise Exception('Usecase "%s" not implemented for this dataloader' % usecase)
         self.dataset = function()
+        if max_items is not None:
+            self.dataset = self.dataset.take(max_items)
         self.length = self.dataset.cardinality().numpy()
 
         return self.dataset
@@ -257,3 +259,5 @@ class DataLoaderGeneric():
         self.out_data["RGB_im"] = im_col
         self.out_data["rot"] = rot
         self.out_data["trans"] = trans
+
+       
